@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="foo1"></div>
+    <div id="foo2"></div>
+    <script src="zepto.js"></script>
+    <script type="text/javascript">
+    var div1 = $('#foo1');
+    var div2 = $('#foo1');
+    console.log(div1);
+    console.log($('<p></p>'));
+    console.log($('<div></div>', {
+        width: '100px'
+    }));
+
+    Zepto(function($) {
+        console.log("ready!");
+    })
+    var target = {
+            one: 'patridge'
+        },
+        source = {
+            two: 'turtle doves'
+        },
+        source2 = {
+            three: ["apple", "patato"],
+            four: "orange"
+        };
+
+    console.log($.extend(target, source));
+    console.log($.extend(target, source2));
+
+    console.log($.extend(true, target, source2));
+
+    var fragmentRE = /^\s*<(\w+|!)[^>]*>/,
+        singleTagRE = /^<(\w+)\s*\/?>(?:<\/\1>|)$/;
+    var selector = "<p></p>";
+    if (fragmentRE.test(selector)) {
+        console.log(RegExp.$1);
+    }
+    if (singleTagRE.test(selector)) {
+        console.log(RegExp.$1);
+    }
+    name = fragmentRE.test(selector) && RegExp.$1;
+    console.log(name);
+    </script>
+</body>
+
+</html>

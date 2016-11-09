@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="foo1"></div>
+    <div id="foo2"></div>
+    <script src="_zepto.js"></script>
+    <script type="text/javascript">
+    // var div1 = $('#foo1');
+    // var div2 = $('#foo1');
+    // console.log(div1);
+    console.info(Zepto);
+    console.info(Zepto.prototype);
+    // console.info(zepto.Z);
+    // console.info(zepto.Z.prototype);
+    // console.info(Z);
+    // console.info(Z.prototype)
+    console.log($('<p></p>'));
+    console.log($.fn.log());
+    console.log($('div').log());
+
+
+    // console.log(Zepto.isZ($('div')));//undefined
+    // console.log($('<div></div>').width('100px'));
+    var target = {
+            one: 'patridge',
+            three: ["apple", "patato"],
+            five:{w:"10",a:"20"}
+        },
+        source = {
+            two: 'turtle doves'
+        },
+        source2 = {
+            three: ["apple1", "patato1","abc"],
+            four: "orange",
+            five:{w:"100",h:"200"}
+        };
+
+    // console.log($.extend(target, source));
+    // console.log($.extend(target, source2));//five:{w:"100",h:"200"}
+
+    // console.log($.extend(true,target, source2));//five:{a:"20" h:"200" w:"100"}
+    
+    console.log($('<div></div>',{width:'100px'}));
+    console.log($('div'));
+    console.log($('#foo1'));
+    </script>
+</body>
+
+</html>
