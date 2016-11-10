@@ -186,6 +186,8 @@ var Zepto = (function() {
     $.isArray = isArray;
     //$.fn扩展函数
     $.fn = {
+        constructor: zepto.Z,
+        length: 0,//为了链式调用能够return this;
         log: function(test) {
             return '测试';
         }

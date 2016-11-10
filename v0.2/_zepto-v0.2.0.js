@@ -27,14 +27,45 @@ var Zepto = (function() {
         function(object) {
             return object instanceof Array;
         };
+    /**
+     * [matches 元素element是否在selector中]
+     * @param  {[元素]} element  [元素，被查询的元素]
+     * @param  {[String]} selector [CSS选择器]
+     * @return {[Boolean]}          [/true/false]
+     */
+    zepto.matches = function(element, selector) {
+        if (!selector || !element || element.nodeType !== 1) return false
+        var matchesSelector = element.matches || element.webkitMatchesSelector ||
+            element.mozMatchesSelector || element.oMatchesSelector ||
+            element.matchesSelector;
+        //如果当前元素能被指定的css选择器查找到,则返回true,否则返回false.
+        //https://developer.mozilla.org/zh-CN/docs/Web/API/Element/matches
+        if (matchesSelector) return matchesSelector.call(element, selector);
+        //如果浏览器不支持MatchesSelector方法，则将节点放入一个临时div节点
+        var match, parent = element.parentNode,
+            temp = !parent;
+        //当element没有父节点(temp)，那么将其插入到一个临时的div里面
+        //目的就是为了使用qsa函数
+        if (temp)(parent = tempParent).appendChild(element);
+        ///将parent作为上下文，来查找selector的匹配结果，并获取element在结果集的索引
+        //不存在时为－1,再通过~-1转成0，存在时返回一个非零的值
+        match = ~zepto.qsa(parent, selector).indexOf(element);
+        //将插入的节点删掉(&&如果第一个表达式为false,则不再计算第二个表达式)
+        temp && tempParent.removeChild(element);
+        return match; 
+    }
 
     function type(obj) {
         return obj == null ? String(obj) :
             class2type[toString.call(obj)] || "object"
     }
 
+    function isFunction(value) {
+        return type(value) == "function";
+    }
+
     function isWindow(obj) {
-        return obj != null && obj == obj.window
+        return obj != null && obj == obj.window;
     }
 
     function isObject(obj) {
@@ -51,8 +82,15 @@ var Zepto = (function() {
 
         return 'function' != type && !isWindow(obj) && (
             'array' == type || length === 0 ||
-            (typeof length == 'number' && length > 0 && (length - 1) in obj)
+            (typeof length == 'number' && length > 0 && (length - 1) in obj);
         )
+    }
+
+    //清除包含的null undefined
+    function compact(array) {
+        return filter.call(array, function(item) {
+            return item != null;
+        });
     }
 
     function Z(dom, selector) {
@@ -125,19 +163,31 @@ var Zepto = (function() {
             } else {
                 dom = zepto.qsa(document, selector)
             }
+        } //如果selector是个函数
+        else if (isFunction(selector)) {
+            return $(document).ready(selector);
         } //如果selector是一个Zepto对象，返回它自己
         else if (zepto.isZ(selector)) {
             return selector;
         } else {
-            if (isObject(selector)) {
+            //如果selector是一个数组，则将其里面的null,undefined去掉
+            if (isArray(selector)) {
+                dom = compact(selector);
+            } else if (isObject(selector)) {
                 dom = [selector], selector = null;
+            } else if (fragmentRE.test(selector)) {
+                dom = zepto.fragment(selector.trim(), RegExp.$1, context), selector = null;
+            } else if (context !== undefined) {
+                return $(context).find(selector);
+            } else {
+                dom = zepto.qsa(document, selector);
             }
         }
         return zepto.Z(dom, selector);
     }
 
     $ = function(selector, context) {
-            return zepto.init(selector, context)
+            return zepto.init(selector, context);
         }
         /**
          * [extend]
@@ -193,35 +243,101 @@ var Zepto = (function() {
                 isSimple && !maybeID && element.getElementsByClassName ?
                 maybeClass ? element.getElementsByClassName(nameOnly) : //通过类名获得
                 element.getElementsByTagName(selector) : //通过tag标签名获得
-                element.querySelectorAll(selector)//不支持getElementsByClassName/TagName的
+                element.querySelectorAll(selector) //不支持getElementsByClassName/TagName的
             );
     };
     $.trim = function(str) {
         return str == null ? "" : String.prototype.trim.call(str);
     }
     $.each = function(elements, callback) {
-        var i, key;
-        if (likeArray(elements)) {
-            for (i = 0; i < elements.length; i++)
-                if (callback.call(elements[i], i, elements[i]) === false) return elements;
-        } else {
-            for (key in elements)
-                if (callback.call(elements[key], key, elements[key]) === false) return elements;
+            var i, key;
+            if (likeArray(elements)) {
+                for (i = 0; i < elements.length; i++)
+                    if (callback.call(elements[i], i, elements[i]) === false) return elements;
+            } else {
+                for (key in elements)
+                    if (callback.call(elements[key], key, elements[key]) === false) return elements;
+            }
+
+            return elements
+        }
+        //Document.documentElement 是一个只读属性，返回文档对象
+        //（document）的根元素（例如，HTML文档的 <html> 元素）
+        //Node.contains()返回一个布尔值来表示是否传入的节点是，该节点的子节点
+    $.contains = document.documentElement.contains ?
+        function(parent, node) {
+            return parent !== node && parent.contains(node);
+        } :
+        function(parent, node) {
+            while (node && (node = node.parentNode))
+                if (node === parent) return true;
+            return false;
         }
 
-        return elements
-    }
     $.type = type;
+    $.isFunction = isFunction;
     $.isArray = isArray;
     //$.fn扩展函数
     $.fn = {
         constructor: zepto.Z,
-        length: 0,//为了链式调用能够return this;
-        log: function(test) {
-            console.warn(this);
-            return '测试';
+        length: 0, //为了链式调用能够return this;
+        forEach: emptyArray.forEach,
+        //fiter函数其实可以说是包装原生的filter方法
+        filter: function(selector) {
+            if (isFunction(selector)) {
+            	//this.not(selector)取到需要排除的集合，
+            	//第二次再取反(这个时候this.not的参数就是一个集合了)，得到想要的集合
+                return this.not(this.not(selector));
+            } //下面一句的filter是原生的方法
+            //过滤剩下this中有被selector选择的
+            return $(filter.call(this, function(element) {
+                return zepto.matches(element, selector);
+            }));
         },
-
+        not: function(selector) {
+            var nodes = [];
+            //当selector为函数时，safari下的typeof NodeList也是function，
+            //所以这里需要再加一个判断selector.call !== undefined
+            if (isFunction(selector) && selector.call !== undefined)
+                this.each(function(idx) {
+                    if (!selector.call(this, idx)) nodes.push(this);
+                })
+            else {
+                var excludes = typeof selector == 'string' ? this.filter(selector) :
+                	//当selector为nodeList时执行slice.call(selector),
+                	//注意这里的isFunction(selector.item)是为了排除selector为数组的情况
+                    (likeArray(selector) && isFunction(selector.item)) ? slice.call(selector) : $(selector);
+                this.forEach(function(el) {
+                    if (excludes.indexOf(el) < 0) nodes.push(el);
+                })
+            }
+            //上面得到的结果是数组，需要转成zepto对象，以便继承其它方法，实现链写
+            return $(nodes);
+        },
+        find: function(selector) {
+            var result, $this = this;
+            if (!selector) {
+                result = $();
+            } //1-如果selector为node或者zepto集合时
+            else if (typeof selector == 'object') {
+                //遍历selector，筛选出父级为集合中记录的selector
+                result = $(selector).filter(function() {
+                    var node = this;
+                    //如果$.contains(parent, node)返回true，则emptyArray.some
+                    //也会返回true,外层的filter则会收录该条记录
+                    return emptyArray.some.call($this, function(parent) {
+                        return $.contains(parent, node);
+                    })
+                })
+            } else if (this.length == 1) { //2-NodeList对象，且length=1
+                result = $(zepto.qsa(this[0], selector));
+            } else {
+                result = this.map(function() { //3-NodeList对象，且length>1
+                    return zepto.qsa(this, selector);
+                });
+            }
+            return result;
+        }
     };
 
     // zepto.prototype = $.fn;
