@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="foo1">
+        <div>1</div>
+        <div>2</div>
+    </div>
+    <div id="foo2">
+        <div>hello</div>
+    </div>
+    <script src="_zepto.js"></script>
+    <script type="text/javascript">
+    var div1 = $('#foo1');
+    var div2 = $('#foo1');
+    console.log($('div','#foo1'));
+
+    console.log($('<div></div>').width('100px'));
+    
+    $(document).ready(function() {
+        
+    });
+    </script>
+</body>
+
+</html>

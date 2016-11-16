@@ -66,9 +66,9 @@ var Zepto = (function() {
         /*        console.info(Zepto);
                 console.info(Zepto.prototype);
                 console.info(zepto.Z);
-            	console.info(zepto.Z.prototype);
-            	console.info(Z);
-            	console.info(Z.prototype);*/
+                console.info(zepto.Z.prototype);
+                console.info(Z);
+                console.info(Z.prototype);*/
     }
     zepto.Z = function(dom, selector) {
         return new Z(dom, selector);
@@ -193,7 +193,7 @@ var Zepto = (function() {
                 isSimple && !maybeID && element.getElementsByClassName ?
                 maybeClass ? element.getElementsByClassName(nameOnly) : //通过类名获得
                 element.getElementsByTagName(selector) : //通过tag标签名获得
-                element.querySelectorAll(selector)//不支持getElementsByClassName/TagName的
+                element.querySelectorAll(selector) //不支持getElementsByClassName/TagName的
             );
     };
     $.trim = function(str) {
@@ -213,10 +213,13 @@ var Zepto = (function() {
     }
     $.type = type;
     $.isArray = isArray;
+    $.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
+        class2type["[object " + name + "]"] = name.toLowerCase();
+    });
     //$.fn扩展函数
     $.fn = {
         constructor: zepto.Z,
-        length: 0,//为了链式调用能够return this;
+        length: 0, //为了链式调用能够return this;
         log: function(test) {
             console.warn(this);
             return '测试';

@@ -65,9 +65,9 @@ var Zepto = (function() {
         /*        console.info(Zepto);
                 console.info(Zepto.prototype);
                 console.info(zepto.Z);
-            	console.info(zepto.Z.prototype);
-            	console.info(Z);
-            	console.info(Z.prototype);*/
+                console.info(zepto.Z.prototype);
+                console.info(Z);
+                console.info(Z.prototype);*/
     }
     zepto.Z = function(dom, selector) {
         return new Z(dom, selector);
@@ -120,7 +120,7 @@ var Zepto = (function() {
                 dom = zepto.fragment(selector, RegExp.$1, context), selector = null;
             }
             //TODO:带有上下文和css查询
-            
+
         } //如果selector是一个Zepto对象，返回它自己
         else if (zepto.isZ(selector)) {
             return selector;
@@ -133,26 +133,26 @@ var Zepto = (function() {
     }
 
     $ = function(selector, context) {
-        return zepto.init(selector, context)
-    }
-    /**
-     * [extend]
-     * @param  {[Object]} target [目标对象]
-     * @param  {[Object]} source [原对象]
-     * @param  {[Boolean]} deep   [true表示深复制，默认为浅复制]
-     * @return 
-     */
+            return zepto.init(selector, context)
+        }
+        /**
+         * [extend]
+         * @param  {[Object]} target [目标对象]
+         * @param  {[Object]} source [原对象]
+         * @param  {[Boolean]} deep   [true表示深复制，默认为浅复制]
+         * @return 
+         */
     function extend(target, source, deep) {
         for (key in source)
-        	// deep=true深拷贝 source[key]是数组，一层一层剥开
+        // deep=true深拷贝 source[key]是数组，一层一层剥开
             if (deep && (isPlainObject(source[key]) || isArray(source[key]))) {
-                if (isPlainObject(source[key]) && !isPlainObject(target[key]))
-                    target[key] = {};//target[key]不是对象的时候，返回空
-                // source[key]是数组，target[key]不是数组
-                if (isArray(source[key]) && !isArray(target[key]))
-                    target[key] = [];
-                extend(target[key], source[key], deep);//递归
-            } else if (source[key] !== undefined) {//递归结束，source[key]不是数组
+            if (isPlainObject(source[key]) && !isPlainObject(target[key]))
+                target[key] = {}; //target[key]不是对象的时候，返回空
+            // source[key]是数组，target[key]不是数组
+            if (isArray(source[key]) && !isArray(target[key]))
+                target[key] = [];
+            extend(target[key], source[key], deep); //递归
+        } else if (source[key] !== undefined) { //递归结束，source[key]不是数组
             target[key] = source[key];
         }
     }
@@ -184,10 +184,13 @@ var Zepto = (function() {
     }
     $.type = type;
     $.isArray = isArray;
+    $.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
+        class2type["[object " + name + "]"] = name.toLowerCase();
+    });
     //$.fn扩展函数
     $.fn = {
         constructor: zepto.Z,
-        length: 0,//为了链式调用能够return this;
+        length: 0, //为了链式调用能够return this;
         log: function(test) {
             return '测试';
         }

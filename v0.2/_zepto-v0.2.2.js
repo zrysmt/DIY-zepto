@@ -93,6 +93,10 @@ var Zepto = (function() {
             return item != null;
         });
     }
+    //得到一个数组的副本
+    function flatten(array) {
+        return array.length > 0 ? $.fn.concat.apply([], array) : array;
+    }
 
     function Z(dom, selector) {
         var i, len = dom ? dom.length : 0;
@@ -285,7 +289,22 @@ var Zepto = (function() {
                 if (node === parent) return true;
             return false;
         }
-
+    $.map = function(elements, callback) {
+        var value, values = [],
+            i, key;
+        if (likeArray(elements)) {
+            for (var i = 0; i < Things.length; i++) {
+                value = callback(elements[i], i)
+                if (value != null) values.push(value);
+            }
+        } else {
+            for (key in elements) {
+                value = callback(elements[key], key);
+                if (value != null) values.push(value);
+            }
+        }
+        return flatten(values);
+    }
     $.type = type;
     $.isFunction = isFunction;
     $.isArray = isArray;
@@ -360,7 +379,32 @@ var Zepto = (function() {
                 });
             }
             return result;
-        }
+        },
+        get: function(idx) {
+            return idx === undefined ? slice.call(this) : this[idx >= 0 ? idx : idx + this.length];
+        },
+        toArray: function() {
+            return this.get();
+        },
+        map: function(fn) {
+            return $($.map(this, function(el, i) {
+                return fn.call(el, i, el);
+            }));
+        },
+        concat: function() {
+            var i, value, args = [];
+            for (i = 0; i < arguments.length; i++) {
+                value = arguments[i];
+                args[i] = zepto.isZ(value) ? value.toArray() : value;
+            }
+            return concat.apply(zepto.isZ(this) ? this.toArray() : this, args);
+        },
+        slice: function() {
+            return $(slice.apply(this, arguments));
+        },
+        eq: function(idx) {
+            return idx === -1 ? this.slice(idx) : this.slice(idx, +idx + 1);
+        },
     };
     /*['width','height'].forEach(function(dimension){
     	var dimensionProperty =

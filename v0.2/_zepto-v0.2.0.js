@@ -52,7 +52,7 @@ var Zepto = (function() {
         match = ~zepto.qsa(parent, selector).indexOf(element);
         //将插入的节点删掉(&&如果第一个表达式为false,则不再计算第二个表达式)
         temp && tempParent.removeChild(element);
-        return match; 
+        return match;
     }
 
     function type(obj) {
@@ -104,9 +104,9 @@ var Zepto = (function() {
         /*        console.info(Zepto);
                 console.info(Zepto.prototype);
                 console.info(zepto.Z);
-            	console.info(zepto.Z.prototype);
-            	console.info(Z);
-            	console.info(Z.prototype);*/
+                console.info(zepto.Z.prototype);
+                console.info(Z);
+                console.info(Z.prototype);*/
     }
     zepto.Z = function(dom, selector) {
         return new Z(dom, selector);
@@ -277,6 +277,9 @@ var Zepto = (function() {
     $.type = type;
     $.isFunction = isFunction;
     $.isArray = isArray;
+    $.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
+        class2type["[object " + name + "]"] = name.toLowerCase();
+    });
     //$.fn扩展函数
     $.fn = {
         constructor: zepto.Z,
@@ -285,8 +288,8 @@ var Zepto = (function() {
         //fiter函数其实可以说是包装原生的filter方法
         filter: function(selector) {
             if (isFunction(selector)) {
-            	//this.not(selector)取到需要排除的集合，
-            	//第二次再取反(这个时候this.not的参数就是一个集合了)，得到想要的集合
+                //this.not(selector)取到需要排除的集合，
+                //第二次再取反(这个时候this.not的参数就是一个集合了)，得到想要的集合
                 return this.not(this.not(selector));
             } //下面一句的filter是原生的方法
             //过滤剩下this中有被selector选择的
@@ -304,8 +307,8 @@ var Zepto = (function() {
                 })
             else {
                 var excludes = typeof selector == 'string' ? this.filter(selector) :
-                	//当selector为nodeList时执行slice.call(selector),
-                	//注意这里的isFunction(selector.item)是为了排除selector为数组的情况
+                    //当selector为nodeList时执行slice.call(selector),
+                    //注意这里的isFunction(selector.item)是为了排除selector为数组的情况
                     (likeArray(selector) && isFunction(selector.item)) ? slice.call(selector) : $(selector);
                 this.forEach(function(el) {
                     if (excludes.indexOf(el) < 0) nodes.push(el);
