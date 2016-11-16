@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style type="text/css">
+    	div{
+    		width: 100px;
+    		height: 100px;
+    		border:solid 1px black;
+    	}
+    </style>
+</head>
+
+<body>
+    <div id="foo1">foo1</div>
+    <div id="foo2">foo2</div>
+    <div id="foo3">foo3
+		<div id="foo31">foo31</div>
+    </div>
+    <a href="demo1.html" class="my-a">demo1.html</a>
+    <script src="zepto.js"></script>
+    <script type="text/javascript">
+    var div1 = $('#foo1');
+    var div2 = $('#foo2');
+    $('body').on('click', '#foo1', function(event) {
+    	console.log(event);
+    	event.preventDefault();
+    	alert("点击");
+    });
+    $('body').on('click', '#foo2', 'test',function(event) {
+    	event.preventDefault();
+    	alert("点击foo2"+event.data);
+    });
+    $('#foo3').on('click', function(event) {
+    	alert("点击");
+    });
+    $('body').on('click', '.my-a', false);//不跳转
+    </script>
+</body>
+
+</html>

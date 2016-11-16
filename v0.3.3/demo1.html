@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>事件模块</title>
+    <style type="text/css">
+    div {
+        width: 100px;
+        height: 100px;
+        border: solid 1px black;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="foo1">foo1</div>
+    <div id="foo2">foo2</div>
+    <div id="foo3">foo3
+        <div id="foo31">foo31</div>
+    </div>
+    <a href="demo1.html" class="my-a">demo1.html</a>
+    <script src="bundle.js"></script>
+    <!-- <script src="_zepto.js"></script> -->
+    <script type="text/javascript">
+    var div1 = $('#foo1');
+    var div2 = $('#foo2');
+    $('body').on('click', '#foo1', function(event) {
+        console.log(event);
+        event.preventDefault();
+        alert("点击");
+    });
+    $('body').on('click', '#foo2', 'test', function(event) {
+        event.preventDefault();
+        alert("点击foo2" + event.data);
+    });
+    $('#foo3').on('click', function(event) {
+        alert("点击");
+    });
+    $('body').on('click', '.my-a', false); //不跳转
+    $('body').off('click', '#foo1'/*,function(){
+        console.info('offfffff');
+    }*/);
+    /**********************************************************/
+    $(document).on('mylib:change', function(e, from, to) {
+             console.log('change on %o with data %s, %s', e.target, from, to)
+                 //change on <body>​…​</body>​ with data one, two
+         })
+         // trigger the custom event
+     $(document.body).trigger('mylib:change', ['one', 'two']);
+    /**********************************************************/
+    /***********************************************************/
+    var obj = {
+            name: 'Zepto'
+        },
+        handler = function() {
+            console.log("hello from + ", this.name)
+        }
+
+    // ensures that the handler will be executed in the context of `obj`:
+    $(document).on('click', $.proxy(handler, obj));
+        /*************************************************************/
+    </script>
+</body>
+
+</html>

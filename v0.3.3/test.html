@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style type="text/css">
+    div {
+        width: 100px;
+        height: 100px;
+        border: solid 1px black;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="foo1">foo1</div>
+    <div id="foo2">foo2</div>
+    <div id="foo3">foo3
+        <div id="foo31">foo31</div>
+    </div>
+    <a href="demo1.html" class="my-a">demo1.html</a>
+    <script src="zepto.js"></script>
+    <script type="text/javascript">
+    var div1 = $('#foo1');
+    var div2 = $('#foo2');
+    $('body').on('click', '#foo1', function(event) {
+        console.log(event);
+        event.preventDefault();
+        alert("点击");
+    });
+    $('body').on('click', '#foo2', 'test', function(event) {
+        event.preventDefault();
+        alert("点击foo2" + event.data);
+    });
+    $('#foo3').on('click', function(event) {
+        alert("点击");
+    });
+    $('body').on('click', '.my-a', false); //不跳转
+    $('body').off('click', '#foo1'
+        /*,function(){
+                console.info('offfffff');
+            }*/
+    );
+    /*************************************************************/
+    /*    var event = document.createEvent('Event');
+
+        // Define that the event name is 'build'.
+        event.initEvent('build', true, true);
+
+        // Listen for the event.
+        document.getElementById('foo1').addEventListener('build', function(e) {
+            // e.target matches elem
+            console.log(e);
+            console.log(e.target);
+        }, false);
+
+        // target can be any Element or other EventTarget.
+        document.getElementById('foo1').dispatchEvent(event);*/
+    /***********************************************************/
+    /*在对象集合的元素上触发指定的事件。事件可以是一个字符串类型，也可以是一个 通过$.Event 定义的事件对象。如果给定args参数，它会作为参数传递给事件函数。*/
+    /*var eve = $.Event('mylib:change', {
+        bubbles: true
+    });
+    $(document).on(eve, function(e, from, to) {
+        console.log('change on %o with data %s, %s', e.target, from, to);
+            //change on <body>​…​</body>​ with data one, two
+    })
+    $(document).trigger(eve, ['one', 'two']);*/
+    /***********************************************************/
+
+    /* // add a handler for a custom event
+     $(document).on('mylib:change', function(e, from, to) {
+             console.log('change on %o with data %s, %s', e.target, from, to)
+                 //change on <body>​…​</body>​ with data one, two
+         })
+         // trigger the custom event
+     $(document.body).trigger('mylib:change', ['one', 'two'])*/
+    /***********************************************************/
+    var obj = {
+            name: 'Zepto'
+        },
+        handler = function() {
+            console.log("hello from + ", this.name)
+        }
+
+    // ensures that the handler will be executed in the context of `obj`:
+    $(document).on('click', $.proxy(handler, obj));
+        /*************************************************************/
+    </script>
+</body>
+
+</html>
