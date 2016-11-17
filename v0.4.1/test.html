@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style type="text/css">
+    div {
+        width: 100px;
+        height: 100px;
+        border: solid 1px black;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="foo1">foo1</div>
+    <div id="foo2">foo2</div>
+    <div id="foo3">foo3
+        <div id="foo31">foo31</div>
+    </div>
+    <a href="demo1.html" class="my-a">demo1.html</a>
+    <script src="zepto.js"></script>
+    <script type="text/javascript">
+    var div1 = $('#foo1');
+    var div2 = $('#foo2');
+    var obj = {};
+    var arr = [];
+    var value = "hello";
+
+
+    $.getJSON('/projects.json', function(data) {
+        console.log(data);
+    });
+    $.get('/projects.json', function(data) {
+        console.log(data);
+    });
+ 
+    //?callback=? 使用jsonp
+    /*$.getJSON('https://ccgis.cn/gecp/test.json?callback=?', function(remoteData){
+        console.log(remoteData);
+    });
+
+    //ajax使用jsonp
+     $.ajax({
+         type: 'GET',
+         // type: 'POST',
+         url: 'https://ccgis.cn/gecp/test.json',
+         // type of data we are expecting in return:
+         dataType: 'jsonp',
+         timeout: 300,
+         context: $('body'),
+         success: function(data) {
+             // this.append(data.project.html)
+             console.log(data);
+         },
+         error: function(xhr, type) {
+             console.warn('Ajax error!');
+         }
+     });*/
+
+    /* $(document).on('ajaxBeforeSend', function(e, xhr, options) {
+         console.log('ajaxBeforeSend');
+     })
+
+     $.ajax({
+         type: 'GET',
+         // type: 'POST',
+         url: '/projects.json',
+         // data to be added to query string:
+         data: {
+             name: 'Zepto.js'
+         },
+         // type of data we are expecting in return:
+         dataType: 'json',
+         timeout: 300,
+         context: $('body'),
+         success: function(data) {
+             // Supposing this JSON payload was received:
+             //   {"project": {"id": 42, "html": "<div>..." }}
+             // append the HTML to context object.
+             this.append(data.project.html)
+         },
+         error: function(xhr, type) {
+             alert('Ajax error!')
+         }
+     })*/
+    </script>
+</body>
+
+</html>
