@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style type="text/css">
+    div {
+        width: 100px;
+        height: 100px;
+        border: solid 1px black;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="foo1">foo1</div>
+    <div id="foo2">foo2</div>
+    <div id="foo3">foo3
+        <div id="foo31">foo31</div>
+    </div>
+    <a href="demo1.html" class="my-a">demo1.html</a>
+    <script src="zepto.js"></script>
+    <script type="text/javascript">
+    var div1 = $('#foo1');
+    var div2 = $('#foo2');
+    var div3 = $('#foo3');
+    div1.animate({
+        "width": "300px",
+        "height": "300px"},
+        'slow','ease-in-out', function() {
+            console.log('div1 animate callback');
+            // div2.hide('slow',function(){
+            div2.fadeOut('slow',function(){
+                console.log('div2 animate callback');
+            });
+    },'2000'); 
+    </script>
+</body>
+
+</html>

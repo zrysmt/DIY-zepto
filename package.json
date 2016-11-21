@@ -1,0 +1,18 @@
+{
+  "name": "zepto",
+  "version": "1.2.0",
+  "main": "dist/zepto.js",
+  "homepage": "http://zeptojs.com",
+  "scripts": {
+    "test": "coffee make test",
+    "dist": "coffee make dist",
+    "start": "coffee test/server.coffee"
+  },
+  "repository": "madrobby/zepto",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-preset-es2015-rollup": "^1.2.0",
+    "rollup": "^0.36.3",
+    "rollup-plugin-babel": "^2.6.1",
+  }
+}

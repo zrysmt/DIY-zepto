@@ -6,6 +6,7 @@ var emptyArray = [],
     concat = emptyArray.concat,
     filter = emptyArray.filter,
     slice = emptyArray.slice,
+    cssNumber = { 'column-count': 1, 'columns': 1, 'font-weight': 1, 'line-height': 1,'opacity': 1, 'z-index': 1, 'zoom': 1 },
     fragmentRE = /^\s*<(\w+|!)[^>]*>/,
     singleTagRE = /^<(\w+)\s*\/?>(?:<\/\1>|)$/,
     tagExpanderRE = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/ig,
@@ -27,6 +28,7 @@ var emptyArray = [],
     toString = class2type.toString,
     zepto = {},
     methodAttributes = ['val', 'css', 'html', 'text', 'data', 'width', 'height', 'offset'],
+    adjacencyOperators = ['after', 'prepend', 'before', 'append'],
     isArray = Array.isArray ||
     function(object) {
         return object instanceof Array;
@@ -66,7 +68,7 @@ zepto.matches = function(element, selector) {
 
 function type(obj) {
     return obj == null ? String(obj) :
-        class2type[toString.call(obj)] || "object"
+        class2type[toString.call(obj)] || "object";
 }
 
 function isFunction(value) {
@@ -109,10 +111,26 @@ function compact(array) {
 function flatten(array) {
     return array.length > 0 ? $.fn.concat.apply([], array) : array;
 }
+camelize = function(str) {
+    return str.replace(/-+(.)?/g, function(match, chr) {
+        return chr ? chr.toUpperCase() : '';
+    });
+};
+
+function maybeAddPx(name, value) {
+    return (typeof value == "number" && !cssNumber[dasherize(name)]) ? value + "px" : value;
+}
+
+function dasherize(str) {
+    return str.replace(/::/g, '/')
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+        .replace(/([a-z\d])([A-Z])/g, '$1_$2')
+        .replace(/_/g, '-')
+        .toLowerCase();
+}
 
 function Z(dom, selector) {
     var i, len = dom ? dom.length : 0;
-    console.log(dom);
     for (i = 0; i < len; i++) {
         this[i] = dom[i];
         this.length = len;
@@ -212,18 +230,18 @@ zepto.init = function(selector, context) {
         }
     }
     return zepto.Z(dom, selector);
-}
+};
 
 $ = function(selector, context) {
-        return zepto.init(selector, context);
-    }
-    /**
-     * [extend]
-     * @param  {[Object]} target [目标对象]
-     * @param  {[Object]} source [原对象]
-     * @param  {[Boolean]} deep   [true表示深复制，默认为浅复制]
-     * @return 
-     */
+    return zepto.init(selector, context);
+};
+/**
+ * [extend]
+ * @param  {[Object]} target [目标对象]
+ * @param  {[Object]} source [原对象]
+ * @param  {[Boolean]} deep   [true表示深复制，默认为浅复制]
+ * @return 
+ */
 function extend(target, source, deep) {
     var key;
     for (key in source)
@@ -241,20 +259,20 @@ function extend(target, source, deep) {
 }
 //扩展
 $.extend = function(target) {
-        var deep, args = slice.call(arguments, 1);
-        if (typeof target == 'boolean') {
-            deep = target;
-            target = args.shift();
-        }
-        args.forEach(function(arg) { extend(target, arg, deep); });
-        return target
+    var deep, args = slice.call(arguments, 1);
+    if (typeof target == 'boolean') {
+        deep = target;
+        target = args.shift();
     }
-    /**
-     * [qsa CSS选择器]
-     * @param  {[ELEMENT_NODE]} element  [上下文，常用document]
-     * @param  {[String]} selector [选择器]
-     * @return {[NodeList ]}   [查询结果]
-     */
+    args.forEach(function(arg) { extend(target, arg, deep); });
+    return target;
+};
+/**
+ * [qsa CSS选择器]
+ * @param  {[ELEMENT_NODE]} element  [上下文，常用document]
+ * @param  {[String]} selector [选择器]
+ * @return {[NodeList ]}   [查询结果]
+ */
 zepto.qsa = function(element, selector) {
     var found,
         maybeID = selector[0] == '#',
@@ -279,20 +297,23 @@ $.trim = function(str) {
     return str == null ? "" : String.prototype.trim.call(str);
 }
 $.each = function(elements, callback) {
-        var i, key;
-        if (likeArray(elements)) {
-            for (i = 0; i < elements.length; i++)
-                if (callback.call(elements[i], i, elements[i]) === false) return elements;
-        } else {
-            for (key in elements)
-                if (callback.call(elements[key], key, elements[key]) === false) return elements;
-        }
-
-        return elements;
+    var i, key;
+    if (likeArray(elements)) {
+        for (i = 0; i < elements.length; i++)
+            if (callback.call(elements[i], i, elements[i]) === false) return elements;
+    } else {
+        for (key in elements)
+            if (callback.call(elements[key], key, elements[key]) === false) return elements;
     }
-    //Document.documentElement 是一个只读属性，返回文档对象
-    //（document）的根元素（例如，HTML文档的 <html> 元素）
-    //Node.contains()返回一个布尔值来表示是否传入的节点是，该节点的子节点
+
+    return elements;
+};
+$.inArray = function(elem, array, i) {
+    return emptyArray.indexOf.call(array, elem, i);
+};
+//Document.documentElement 是一个只读属性，返回文档对象
+//（document）的根元素（例如，HTML文档的 <html> 元素）
+//Node.contains()返回一个布尔值来表示是否传入的节点是，该节点的子节点
 $.contains = document.documentElement.contains ?
     function(parent, node) {
         return parent !== node && parent.contains(node);
@@ -317,10 +338,13 @@ $.map = function(elements, callback) {
         }
     }
     return flatten(values);
-}
+};
 $.type = type;
 $.isFunction = isFunction;
 $.isArray = isArray;
+$.isWindow = isWindow;
+$.isPlainObject = isPlainObject;
+if (window.JSON) $.parseJSON = JSON.parse;
 $.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
     class2type["[object " + name + "]"] = name.toLowerCase();
 });
@@ -413,6 +437,15 @@ $.fn = {
     toArray: function() {
         return this.get();
     },
+    size: function() {
+        return this.length;
+    },
+    remove: function() {
+        return this.each(function() {
+            if (this.parentNode != null)
+                this.parentNode.removeChild(this);
+        })
+    },
     map: function(fn) {
         return $($.map(this, function(el, i) {
             return fn.call(el, i, el);
@@ -435,13 +468,48 @@ $.fn = {
     clone: function() {
         return this.map(function() {
             return this.cloneNode(true)
-        })
+        });
     },
     each: function(callback) {
         emptyArray.every.call(this, function(el, idx) {
             return callback.call(el, idx, el) !== false;
-        })
+        });
         return this;
+    },
+    css: function(property, value) {
+        if (arguments.length < 2) {
+            var element = this[0];
+            if (typeof property == 'string') {
+                if (!element) return;
+                return element.style[camelize(property)] || getComputedStyle(element, '').getPropertyValue(property);
+            } else if (isArray(property)) {
+                if (!element) return;
+                var props = {};
+                var computedStyle = getComputedStyle(element, '');
+                $.each(property, function(_, prop) {
+                    props[prop] = (element.style[camelize(prop)] || computedStyle.getPropertyValue(prop));
+                });
+                return props;
+            }
+        }
+
+        var css = '';
+        if (type(property) == 'string') {
+            if (!value && value !== 0) {
+                this.each(function() { this.style.removeProperty(dasherize(property)); });
+            } else {
+                css = dasherize(property) + ":" + maybeAddPx(property, value);
+            }
+        } else {
+            for (key in property)
+                if (!property[key] && property[key] !== 0) {
+                    this.each(function() { this.style.removeProperty(dasherize(key)); });
+                } else {
+                    css += dasherize(key) + ':' + maybeAddPx(key, property[key]) + ';';
+                }
+        }
+
+        return this.each(function() { this.style.cssText += ';' + css; });
     },
 };
 /*['width','height'].forEach(function(dimension){
@@ -449,6 +517,71 @@ $.fn = {
   dimension.replace(/./, function(m){ return m[0].toUpperCase() });//全部转为大写
   
 });*/
+function traverseNode(node, fun) {
+    fun(node);
+    for (var i = 0, len = node.childNodes.length; i < len; i++)
+        traverseNode(node.childNodes[i], fun);
+}
+// Generate the `after`, `prepend`, `before`, `append`,
+// `insertAfter`, `insertBefore`, `appendTo`, and `prependTo` methods.
+adjacencyOperators.forEach(function(operator, operatorIndex) {
+    var inside = operatorIndex % 2; //=> prepend, append
+
+    $.fn[operator] = function() {
+        // arguments can be nodes, arrays of nodes, Zepto objects and HTML strings
+        var argType, nodes = $.map(arguments, function(arg) {
+                var arr = [];
+                argType = type(arg);
+                if (argType == "array") {
+                    arg.forEach(function(el) {
+                        if (el.nodeType !== undefined) return arr.push(el);
+                        else if ($.zepto.isZ(el)) return arr = arr.concat(el.get());
+                        arr = arr.concat(zepto.fragment(el));
+                    });
+                    return arr;
+                }
+                return argType == "object" || arg == null ?
+                    arg : zepto.fragment(arg);
+            }),
+            parent, copyByClone = this.length > 1;
+        if (nodes.length < 1) return this;
+
+        return this.each(function(_, target) {
+            parent = inside ? target : target.parentNode;
+
+            // convert all methods to a "before" operation
+            target = operatorIndex == 0 ? target.nextSibling :
+                operatorIndex == 1 ? target.firstChild :
+                operatorIndex == 2 ? target :
+                null;
+
+            var parentInDocument = $.contains(document.documentElement, parent);
+
+            nodes.forEach(function(node) {
+                if (copyByClone) node = node.cloneNode(true);
+                else if (!parent) return $(node).remove();
+
+                parent.insertBefore(node, target);
+                if (parentInDocument) traverseNode(node, function(el) {
+                    if (el.nodeName != null && el.nodeName.toUpperCase() === 'SCRIPT' &&
+                        (!el.type || el.type === 'text/javascript') && !el.src) {
+                        var target = el.ownerDocument ? el.ownerDocument.defaultView : window;
+                        target['eval'].call(target, el.innerHTML);
+                    }
+                });
+            });
+        });
+    };
+
+    // after    => insertAfter
+    // prepend  => prependTo
+    // before   => insertBefore
+    // append   => appendTo
+    $.fn[inside ? operator + 'To' : 'insert' + (operatorIndex ? 'Before' : 'After')] = function(html) {
+        $(html)[operator](this);
+        return this;
+    };
+});
 
 zepto.Z.prototype = Z.prototype = $.fn;
 

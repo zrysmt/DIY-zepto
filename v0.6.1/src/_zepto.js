@@ -27,6 +27,7 @@ var emptyArray = [],
     toString = class2type.toString,
     zepto = {},
     methodAttributes = ['val', 'css', 'html', 'text', 'data', 'width', 'height', 'offset'],
+    adjacencyOperators = ['after', 'prepend', 'before', 'append'],
     isArray = Array.isArray ||
     function(object) {
         return object instanceof Array;
@@ -66,7 +67,7 @@ zepto.matches = function(element, selector) {
 
 function type(obj) {
     return obj == null ? String(obj) :
-        class2type[toString.call(obj)] || "object"
+        class2type[toString.call(obj)] || "object";
 }
 
 function isFunction(value) {
@@ -112,7 +113,6 @@ function flatten(array) {
 
 function Z(dom, selector) {
     var i, len = dom ? dom.length : 0;
-    console.log(dom);
     for (i = 0; i < len; i++) {
         this[i] = dom[i];
         this.length = len;
@@ -279,20 +279,23 @@ $.trim = function(str) {
     return str == null ? "" : String.prototype.trim.call(str);
 }
 $.each = function(elements, callback) {
-        var i, key;
-        if (likeArray(elements)) {
-            for (i = 0; i < elements.length; i++)
-                if (callback.call(elements[i], i, elements[i]) === false) return elements;
-        } else {
-            for (key in elements)
-                if (callback.call(elements[key], key, elements[key]) === false) return elements;
-        }
-
-        return elements;
+    var i, key;
+    if (likeArray(elements)) {
+        for (i = 0; i < elements.length; i++)
+            if (callback.call(elements[i], i, elements[i]) === false) return elements;
+    } else {
+        for (key in elements)
+            if (callback.call(elements[key], key, elements[key]) === false) return elements;
     }
-    //Document.documentElement 是一个只读属性，返回文档对象
-    //（document）的根元素（例如，HTML文档的 <html> 元素）
-    //Node.contains()返回一个布尔值来表示是否传入的节点是，该节点的子节点
+
+    return elements;
+};
+$.inArray = function(elem, array, i) {
+    return emptyArray.indexOf.call(array, elem, i);
+};
+//Document.documentElement 是一个只读属性，返回文档对象
+//（document）的根元素（例如，HTML文档的 <html> 元素）
+//Node.contains()返回一个布尔值来表示是否传入的节点是，该节点的子节点
 $.contains = document.documentElement.contains ?
     function(parent, node) {
         return parent !== node && parent.contains(node);
@@ -317,10 +320,13 @@ $.map = function(elements, callback) {
         }
     }
     return flatten(values);
-}
+};
 $.type = type;
 $.isFunction = isFunction;
 $.isArray = isArray;
+$.isWindow = isWindow;
+$.isPlainObject = isPlainObject;
+if (window.JSON) $.parseJSON = JSON.parse;
 $.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
     class2type["[object " + name + "]"] = name.toLowerCase();
 });
@@ -413,6 +419,12 @@ $.fn = {
     toArray: function() {
         return this.get();
     },
+    remove: function() {
+        return this.each(function() {
+            if (this.parentNode != null)
+                this.parentNode.removeChild(this);
+        })
+    },
     map: function(fn) {
         return $($.map(this, function(el, i) {
             return fn.call(el, i, el);
@@ -435,12 +447,12 @@ $.fn = {
     clone: function() {
         return this.map(function() {
             return this.cloneNode(true)
-        })
+        });
     },
     each: function(callback) {
         emptyArray.every.call(this, function(el, idx) {
             return callback.call(el, idx, el) !== false;
-        })
+        });
         return this;
     },
 };
@@ -449,6 +461,71 @@ $.fn = {
   dimension.replace(/./, function(m){ return m[0].toUpperCase() });//全部转为大写
   
 });*/
+function traverseNode(node, fun) {
+    fun(node);
+    for (var i = 0, len = node.childNodes.length; i < len; i++)
+        traverseNode(node.childNodes[i], fun);
+}
+// Generate the `after`, `prepend`, `before`, `append`,
+// `insertAfter`, `insertBefore`, `appendTo`, and `prependTo` methods.
+adjacencyOperators.forEach(function(operator, operatorIndex) {
+    var inside = operatorIndex % 2; //=> prepend, append
+
+    $.fn[operator] = function() {
+        // arguments can be nodes, arrays of nodes, Zepto objects and HTML strings
+        var argType, nodes = $.map(arguments, function(arg) {
+                var arr = [];
+                argType = type(arg);
+                if (argType == "array") {
+                    arg.forEach(function(el) {
+                        if (el.nodeType !== undefined) return arr.push(el);
+                        else if ($.zepto.isZ(el)) return arr = arr.concat(el.get());
+                        arr = arr.concat(zepto.fragment(el));
+                    });
+                    return arr;
+                }
+                return argType == "object" || arg == null ?
+                    arg : zepto.fragment(arg);
+            }),
+            parent, copyByClone = this.length > 1;
+        if (nodes.length < 1) return this;
+
+        return this.each(function(_, target) {
+            parent = inside ? target : target.parentNode;
+
+            // convert all methods to a "before" operation
+            target = operatorIndex == 0 ? target.nextSibling :
+                operatorIndex == 1 ? target.firstChild :
+                operatorIndex == 2 ? target :
+                null;
+
+            var parentInDocument = $.contains(document.documentElement, parent);
+
+            nodes.forEach(function(node) {
+                if (copyByClone) node = node.cloneNode(true);
+                else if (!parent) return $(node).remove();
+
+                parent.insertBefore(node, target);
+                if (parentInDocument) traverseNode(node, function(el) {
+                    if (el.nodeName != null && el.nodeName.toUpperCase() === 'SCRIPT' &&
+                        (!el.type || el.type === 'text/javascript') && !el.src) {
+                        var target = el.ownerDocument ? el.ownerDocument.defaultView : window;
+                        target['eval'].call(target, el.innerHTML);
+                    }
+                });
+            });
+        });
+    };
+
+    // after    => insertAfter
+    // prepend  => prependTo
+    // before   => insertBefore
+    // append   => appendTo
+    $.fn[inside ? operator + 'To' : 'insert' + (operatorIndex ? 'Before' : 'After')] = function(html) {
+        $(html)[operator](this);
+        return this;
+    };
+});
 
 zepto.Z.prototype = Z.prototype = $.fn;
 
