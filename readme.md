@@ -59,6 +59,10 @@ v0.3.2开始-v0.7.1文件
 
 + rollup.config.dev.js文件配置正确，执行命令`rollup -c rollup.config.dev.js`
 
+# 3.rollup+es6配置
+[查看博客](https://github.com/zrysmt/Blog/blob/master/rollup%2Bes6%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.md)
+
+> https://github.com/zrysmt/Blog/blob/master/rollup%2Bes6%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5.md
 
 > [博客地址](https://github.com/zrysmt/Blog)
 > https://github.com/zrysmt/Blog
